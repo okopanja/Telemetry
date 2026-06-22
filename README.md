@@ -1,5 +1,5 @@
 # Instructions
-1. Copy the ()[measure_performance.lua] to Saved Games\DCS\Scripts
+1. Copy the (measure_performance.lua)[measure_performance.lua] to Saved Games\DCS\Scripts
 2. Edit/Create Export.lua file with following line, placed ideally at start
 
 ```lua
