@@ -16,6 +16,8 @@ local isOwnshipExportAllowed = LoIsOwnshipExportAllowed()
 local LOG_NAME = "MEASURE_PERFORMANCE"
 local outputFile = nil
 local lastName = nil
+local prevPosition = nil
+local traveledDistance = 0
 
 local headerSeparator = ','
 local rowSeparator = '\n'
@@ -40,6 +42,7 @@ local columnOrder = {
 	"accelerationUnits",
 	"machNumber",
 	--	"alt",
+	"traveledDistance",
 	"fuel_internal",
 	"Temperature_Left",
 	"Temperature_Right",
@@ -69,6 +72,16 @@ local function readExportParameters()
 	local normalizedTime = string.format("2025-08-27T%02d:%02d:%012.9f+02:00", hours, minutes, seconds)
 	local trueAirSpeed = LoGetTrueAirSpeed()
 	local indicatedAirSpeed = LoGetIndicatedAirSpeed()
+	local px = selfData.Position.x
+	local py = selfData.Position.y
+	local pz = selfData.Position.z
+	if prevPosition ~= nil then
+		local dx = px - prevPosition.x
+		local dy = py - prevPosition.y
+		local dz = pz - prevPosition.z
+		traveledDistance = traveledDistance + math.sqrt(dx*dx + dy*dy + dz*dz)
+	end
+	prevPosition = { x = px, y = py, z = pz }
 
 	return {
 		-- https://wiki.hoggitworld.com/view/DCS_Export_Script
@@ -102,6 +115,7 @@ local function readExportParameters()
 		angleOfAttack =						LoGetAngleOfAttack(),
 		accelerationUnits = 				LoGetAccelerationUnits(),
 		machNumber = 						LoGetMachNumber(),
+		traveledDistance =					traveledDistance,
 	}
 end
 
@@ -156,6 +170,8 @@ local function createOutputFile(params)
 
 	outputFile = io.open(filename, "w")
 	start_time = LoGetModelTime()
+	prevPosition = nil
+	traveledDistance = 0
 	writeHeader(params)
 end
 
@@ -165,6 +181,8 @@ local function closeFile()
 		outputFile = nil
 		lastName = nil
 		start_time = LoGetModelTime()
+		prevPosition = nil
+		traveledDistance = 0
 	end
 end
 
